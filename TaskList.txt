@@ -1,0 +1,69 @@
+Phase 1: Engine Sandbox & Physics Setup
+
+Before writing code, get the engine's built-in physics handling the heavy lifting.
+
+    [ ] Task: Import your split car model into your engine (Unity/Unreal). Create a master Car_Root parent object and give it a Rigidbody/Physics component. Set its mass to roughly 1300kg.
+
+    [ ] Task: Set up basic colliders. Give the main chassis a simple Box or Convex Mesh collider. Keep the wheels, doors, and engine block free of physics colliders for now.
+
+    [ ] Research: "How to set up Wheel Colliders in Unity" OR "Chaos Vehicle Movement component setup in Unreal Engine." Learn how suspension distance, spring forces, and damper values interact.
+
+    [ ] Task: Create 4 invisible game objects at the wheel axles, attach wheel physics components to them, and tune the suspension so the car chassis floats cleanly off the ground without bouncing like flubber or bottoming out.
+
+Phase 2: Core Movement (Drive, Steer, Brake)
+
+Get the inputs communicating directly with the physics wheels.
+
+    [ ] Research: "Input System polling vs FixedUpdate physics." Understand why physics forces must be applied in the engine's physics tick rather than the frame rendering tick.
+
+    [ ] Task: Write a script that grabs player input (WASD / Controller) and applies it to the wheels.
+
+        Front wheels get a max steering angle (try 35 degrees).
+
+        All wheels (or just drive wheels) get motor torque when hitting throttle.
+
+    [ ] Task: Implement visual wheel tracking. Write a loop in your script that grabs the physical rotation/position of the wheel colliders and updates your modular visual wheel meshes to match them exactly.
+
+    [ ] Task: Implement normal braking and a handbrake.
+
+        Normal braking (S key when moving forward): Applies moderate brake torque to all four wheels.
+
+        Handbrake (Spacebar): Applies maximum brake torque only to the rear wheels, causing them to lock up and slide.
+
+Phase 3: Manual Transmission & Drivetrain
+
+This is where the Pacific Drive/MSC complexity kicks in. You need to calculate how engine RPM translates to wheel speed.
+
+    [ ] Research: "Car transmission physics math: Gear ratios, Differential ratio, and Engine RPM calculation."
+
+    [ ] Task: Define your transmission variables in your script:
+
+        An array of gear ratios (e.g., 1st: 3.5, 2nd: 2.1, 3rd: 1.4, 4th: 1.0, 5th: 0.8, 6th: 0.6, Reverse: -3.2).
+
+        A final drive differential ratio (e.g., 4.1).
+
+        An engineRPM variable capped between idleRPM (800) and maxRPM (6000).
+
+    [ ] Task: Write the RPM logic. Engine RPM is calculated by multiplying the current wheel rotation speed by the current gear ratio, the final drive ratio, and a constant to convert to minutes.
+
+    [ ] Task: Create the shifting logic. Map keys (like Q/E or Shift/Ctrl) to increment or decrement a currentGear integer index.
+
+        If currentGear == 0, the car is in Neutral (0 torque goes to wheels, engine can rev freely).
+
+        If currentGear == -1, it's Reverse (torque is inverted).
+
+    [ ] Task: Apply torque based on gears. Multiply your engine's base torque by the current gear ratio and final drive ratio before sending it to the wheels. (1st gear = massive torque, slow speed; 6th gear = low torque, high speed).
+
+Phase 4: Modular Part Integration
+
+Hooking up your split meshes to the driving logic so parts actually matter.
+
+    [ ] Research: "Component-based architecture in game development." Learn how to check if a script component exists on an object before running dependent code.
+
+    [ ] Task: Create a script called CarPart.cs and attach it to your modular meshes. Give it a variable like bool isAttached.
+
+    [ ] Task: Wire the parts into the driving script.
+
+        Wheels: In your driving script, check if the corresponding visual wheel mesh has isAttached == false. If it's detached, set that wheel collider's motor torque and friction to 0 so the car drags on its bare axle.
+
+        Engine Block / Battery: If these specific parts are detached or missing from the car, disable the player's ability to input throttle or start the ignition entirely.
