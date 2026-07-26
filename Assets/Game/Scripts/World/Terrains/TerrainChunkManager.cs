@@ -8,16 +8,28 @@ public class TerrainChunkManager : MonoBehaviour
     public int chunkSize = 50;
     public int renderDistance = 2;
 
+
     private Dictionary<Vector2Int, GameObject> chunks = new Dictionary<Vector2Int, GameObject>();
 
+    private Vector2Int currentChunk;
     void Start()
     {
-        UpdateChunks();
+        currentChunk = new Vector2Int(
+        Mathf.FloorToInt(target.position.x / chunkSize),
+        Mathf.FloorToInt(target.position.z / chunkSize)
+    );
+
+    UpdateChunks();
     }
 
     void Update()
     {
-        UpdateChunks();
+        Vector2Int newChunk = new Vector2Int(Mathf.FloorToInt(target.position.x / chunkSize), Mathf.FloorToInt(target.position.z / chunkSize));
+        if (newChunk != currentChunk)
+        {
+            currentChunk = newChunk;
+            UpdateChunks();
+        }
     }
 
     public void UpdateChunks()
